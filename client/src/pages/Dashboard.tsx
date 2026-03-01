@@ -164,25 +164,26 @@ export default function Dashboard() {
 
   // Auto-update from n8n webhook data
   useEffect(() => {
-    if (n8nData.data) {
-      // Handle both array and single object responses
-      const record = Array.isArray(n8nData.data) ? n8nData.data[0] : n8nData.data;
-      if (!record?.payload) return;
-      const payload = record.payload;
-      const newData: FlightData = {
-        etaDate: payload.etaDate || data.etaDate,
-        eta: payload.eta || data.eta,
-        cny: payload.cny !== undefined ? payload.cny : data.cny,
-        flyers: payload.flyers !== undefined ? payload.flyers : data.flyers,
-        ulds: payload.ulds !== undefined ? payload.ulds : data.ulds,
-        earlyUlds: payload.earlyUlds !== undefined ? payload.earlyUlds : data.earlyUlds,
-        ddTd: payload.ddTd !== undefined ? payload.ddTd : data.ddTd,
-        lastUpdated: new Date().toISOString(),
-      };
-      setData(newData);
-      saveFlightData(newData);
-      toast.success("Flydata opdateret fra n8n");
-    }
+    if (!n8nData.data) return;
+    
+    // Handle both array and single object responses
+    const record = Array.isArray(n8nData.data) ? n8nData.data[0] : n8nData.data;
+    if (!record || !record.payload) return;
+    
+    const payload = record.payload;
+    const newData: FlightData = {
+      etaDate: payload.etaDate || data.etaDate,
+      eta: payload.eta || data.eta,
+      cny: payload.cny !== undefined ? payload.cny : data.cny,
+      flyers: payload.flyers !== undefined ? payload.flyers : data.flyers,
+      ulds: payload.ulds !== undefined ? payload.ulds : data.ulds,
+      earlyUlds: payload.earlyUlds !== undefined ? payload.earlyUlds : data.earlyUlds,
+      ddTd: payload.ddTd !== undefined ? payload.ddTd : data.ddTd,
+      lastUpdated: new Date().toISOString(),
+    };
+    setData(newData);
+    saveFlightData(newData);
+    toast.success("Flydata opdateret fra n8n");
   }, [n8nData.data]);
 
   const handleSave = (newData: FlightData) => {

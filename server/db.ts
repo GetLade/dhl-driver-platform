@@ -135,7 +135,7 @@ export async function getN8nWebhookData(dataType: string) {
   const db = await getDb();
   if (!db) {
     console.warn("[Database] Cannot get n8n webhook data: database not available");
-    return undefined;
+    return null;
   }
 
   try {
@@ -145,7 +145,7 @@ export async function getN8nWebhookData(dataType: string) {
       .where(eq(n8nWebhookData.dataType, dataType))
       .limit(1);
 
-    if (result.length === 0) return undefined;
+    if (result.length === 0) return null;
 
     const record = result[0];
     return {
