@@ -242,10 +242,10 @@ export default function GTListe() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
-              GT-Liste
+              Tag fra liste
             </h1>
             <p className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.01 286)" }}>
-              Tag fra GT-liste – varebil → lastbil
+              
             </p>
           </div>
           <button

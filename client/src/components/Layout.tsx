@@ -6,7 +6,7 @@ import { Plane, BarChart2, List } from "lucide-react";
 const tabs = [
   { path: "/", label: "Flyoverblik", icon: Plane },
   { path: "/odin", label: "ODIN", icon: BarChart2 },
-  { path: "/gtliste", label: "GT-Liste", icon: List },
+  { path: "/gtliste", label: "Tag fra liste", icon: List },
 ];
 
 interface LayoutProps {
