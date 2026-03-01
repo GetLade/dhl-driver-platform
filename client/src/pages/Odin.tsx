@@ -245,8 +245,8 @@ export default function Odin() {
     });
   }, [routes, sortKey, sortDir]);
 
-  const SortIcon = ({ key: k }: { key: SortKey }) => {
-    if (sortKey !== k) return <ArrowUpDown size={12} className="opacity-40" />;
+  const SortIcon = ({ colKey }: { colKey: SortKey }) => {
+    if (sortKey !== colKey) return <ArrowUpDown size={12} className="opacity-40" />;
     return sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />;
   };
 
@@ -361,7 +361,7 @@ export default function Odin() {
             }}
           >
             {label}
-            <SortIcon key={key} />
+            <SortIcon colKey={key} />
           </button>
         ))}
       </div>
@@ -377,8 +377,8 @@ export default function Odin() {
               style={{ background: "oklch(1 0 0)", border: "1px solid oklch(0.92 0.003 286)" }}
             >
               {/* Route Header */}
-              <button
-                className="w-full px-4 py-3 flex items-center justify-between text-left"
+              <div
+                className="w-full px-4 py-3 flex items-center justify-between text-left cursor-pointer"
                 onClick={() => setExpandedId(isExpanded ? null : route.id)}
               >
                 <div>
@@ -420,7 +420,7 @@ export default function Odin() {
                     ▾
                   </div>
                 </div>
-              </button>
+              </div>
 
               {/* Expanded Details */}
               {isExpanded && (
