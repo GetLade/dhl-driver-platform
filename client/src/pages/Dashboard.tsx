@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { Edit2, Check, X, Package, Mail, Layers, Truck, RefreshCw, Clock } from "lucide-react";
 import { getFlightData, saveFlightData, type FlightData } from "@/lib/store";
+import { useN8nData } from "@/hooks/useN8nData";
 import { toast } from "sonner";
 
 function KpiCard({
@@ -155,10 +156,34 @@ function EditModal({ data, onSave, onClose }: EditModalProps) {
 export default function Dashboard() {
   const [data, setData] = useState<FlightData>(getFlightData());
   const [showEdit, setShowEdit] = useState(false);
+  const n8nData = useN8nData('flight');
 
   useEffect(() => {
     setData(getFlightData());
   }, []);
+
+  // Auto-update from n8n webhook data
+  useEffect(() => {
+    if (n8nData.data) {
+      // Handle both array and single object responses
+      const record = Array.isArray(n8nData.data) ? n8nData.data[0] : n8nData.data;
+      if (!record?.payload) return;
+      const payload = record.payload;
+      const newData: FlightData = {
+        etaDate: payload.etaDate || data.etaDate,
+        eta: payload.eta || data.eta,
+        cny: payload.cny !== undefined ? payload.cny : data.cny,
+        flyers: payload.flyers !== undefined ? payload.flyers : data.flyers,
+        ulds: payload.ulds !== undefined ? payload.ulds : data.ulds,
+        earlyUlds: payload.earlyUlds !== undefined ? payload.earlyUlds : data.earlyUlds,
+        ddTd: payload.ddTd !== undefined ? payload.ddTd : data.ddTd,
+        lastUpdated: new Date().toISOString(),
+      };
+      setData(newData);
+      saveFlightData(newData);
+      toast.success("Flydata opdateret fra n8n");
+    }
+  }, [n8nData.data]);
 
   const handleSave = (newData: FlightData) => {
     saveFlightData(newData);
@@ -318,7 +343,7 @@ export default function Dashboard() {
       >
         <Edit2 size={14} style={{ color: "oklch(0.45 0.22 25)" }} />
         <p className="text-xs" style={{ color: "oklch(0.45 0.22 25)" }}>
-          Tryk <strong>Rediger</strong> øverst for at opdatere tallene fra mail — ingen kodeændringer nødvendigt.
+          Tryk <strong>Rediger</strong> øverst for at opdatere tallene fra mail — ingen kodeændringer nødvendigt. Data opdateres også automatisk fra n8n.
         </p>
       </div>
 

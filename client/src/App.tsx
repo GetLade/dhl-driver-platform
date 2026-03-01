@@ -10,8 +10,8 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Odin from "./pages/Odin";
 import GTListe from "./pages/GTListe";
-
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Layout>
       <Switch>
