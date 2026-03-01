@@ -1,7 +1,7 @@
 // DHL Driver Platform – Dashboard / Flyoverblik
 // Design: Clean Logistics White – Large KPI numbers, DHL Red/Yellow brand colors
 // IBM Plex Mono for numbers, IBM Plex Sans for labels
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Edit2, Check, X, Package, Mail, Layers, Truck, RefreshCw, Clock } from "lucide-react";
 import { getFlightData, saveFlightData, type FlightData } from "@/lib/store";
 import { useN8nData } from "@/hooks/useN8nData";
@@ -157,6 +157,7 @@ export default function Dashboard() {
   const [data, setData] = useState<FlightData>(getFlightData());
   const [showEdit, setShowEdit] = useState(false);
   const n8nData = useN8nData('flight');
+  const lastN8nIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     setData(getFlightData());
@@ -169,6 +170,10 @@ export default function Dashboard() {
     // Handle both array and single object responses
     const record = Array.isArray(n8nData.data) ? n8nData.data[0] : n8nData.data;
     if (!record || !record.payload) return;
+    
+    // Only update if this is a new record (different ID)
+    if (lastN8nIdRef.current === record.id) return;
+    lastN8nIdRef.current = record.id;
     
     const payload = record.payload;
     const newData: FlightData = {

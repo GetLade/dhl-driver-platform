@@ -14,9 +14,9 @@ export function useN8nData(dataType?: string) {
     refetchInterval: 5000, // Poll every 5 seconds
   });
   
-  // Query to get specific data type
+  // Query to get specific data type - only enable if dataType is provided
   const typeDataQuery = trpc.n8n.getByType.useQuery(dataType || '', {
-    enabled: isPolling && !!dataType,
+    enabled: isPolling && !!dataType, // Only enable when dataType is actually provided
     refetchInterval: 5000, // Poll every 5 seconds
   });
 
