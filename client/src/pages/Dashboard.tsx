@@ -157,9 +157,9 @@ export default function Dashboard() {
         </div>
 
         {/* Info Box */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 mt-6">
           <p className="font-semibold mb-1">📊 Data fra Google Sheets</p>
-          <p className="text-xs text-blue-700">Tallene opdateres automatisk hvert 5. sekund fra dit Google Sheets-dokument.</p>
+          <p className="text-xs text-blue-700">Flydata opdateres automatisk hvert 5. minut (kun 05:00-09:00 CET).</p>
         </div>
       </div>
     </div>

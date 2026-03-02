@@ -194,7 +194,7 @@ export default function Odin() {
         {/* Info Box */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 mt-6">
           <p className="font-semibold mb-1">📊 Data fra Google Sheets</p>
-          <p className="text-xs text-blue-700">Ruternes performance opdateres automatisk hvert 5. sekund.</p>
+          <p className="text-xs text-blue-700">Tallene opdateres automatisk hvert 5. minut.</p>
         </div>
       </div>
     </div>
