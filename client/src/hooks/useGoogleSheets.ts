@@ -11,6 +11,24 @@ export function useGoogleSheets(sheetName: string, range: string = 'A:H') {
   const [data, setData] = useState<string[][] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastDataHash, setLastDataHash] = useState<string>('');
+
+  // Check if current time is within polling window (05:00-09:00 CET)
+  const isWithinPollingWindow = () => {
+    const now = new Date();
+    // Convert to CET (UTC+1, or UTC+2 during DST)
+    const cetTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' }));
+    const hour = cetTime.getHours();
+    return hour >= 5 && hour < 9;
+  };
+
+  // Simple hash function to detect data changes
+  const hashData = (values: string[][]): string => {
+    return JSON.stringify(values).split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a; // Convert to 32bit integer
+    }, 0).toString();
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,7 +42,15 @@ export function useGoogleSheets(sheetName: string, range: string = 'A:H') {
         }
         
         const result: SheetData = await response.json();
-        setData(result.values || []);
+        const newData = result.values || [];
+        const newHash = hashData(newData);
+        
+        // Only update state if data has changed
+        if (newHash !== lastDataHash) {
+          setData(newData);
+          setLastDataHash(newHash);
+        }
+        
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch Google Sheets data');
@@ -34,11 +60,34 @@ export function useGoogleSheets(sheetName: string, range: string = 'A:H') {
       }
     };
 
+    // Initial fetch
     fetchData();
-    // Poll every 5 seconds for updates
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
-  }, [sheetName, range]);
+
+    // Set up polling interval based on time window
+    let interval: NodeJS.Timeout | null = null;
+    
+    const setupPolling = () => {
+      if (isWithinPollingWindow()) {
+        // Poll every 5 minutes (300000 ms) during 05:00-09:00 CET
+        interval = setInterval(fetchData, 5 * 60 * 1000);
+      } else {
+        // No polling outside the window
+        interval = null;
+      }
+    };
+
+    setupPolling();
+
+    // Check every minute if we need to start/stop polling based on time window
+    const timeCheckInterval = setInterval(() => {
+      setupPolling();
+    }, 60 * 1000);
+
+    return () => {
+      if (interval) clearInterval(interval);
+      clearInterval(timeCheckInterval);
+    };
+  }, [sheetName, range, lastDataHash]);
 
   return { data, loading, error };
 }
