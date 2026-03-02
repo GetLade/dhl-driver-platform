@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, dataType, payload, receivedAt FROM n8n_webhook_data ORDER BY receivedAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user c2WHekeR1zM1ZDu.root --database fKvyyNk7oPfYfEqykoWEyN --execute SELECT id, dataType, payload, receivedAt FROM n8n_webhook_data ORDER BY receivedAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "dataType": "flight",
+      "payload": "{\"etaDate\":\"2026-03-04\",\"eta\":\"19:45\",\"cny\":5000,\"flyers\":1200,\"ulds\":20,\"earlyUlds\":5,\"ddTd\":12}",
+      "receivedAt": "2026-03-01 22:30:28"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdataType\tpayload\treceivedAt\n1\tflight\t{\"etaDate\":\"2026-03-04\",\"eta\":\"19:45\",\"cny\":5000,\"flyers\":1200,\"ulds\":20,\"earlyUlds\":5,\"ddTd\":12}\t2026-03-01 22:30:28\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

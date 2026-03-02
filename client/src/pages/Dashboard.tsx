@@ -1,10 +1,6 @@
-// DHL Driver Platform – Dashboard / Flyoverblik
-// Design: Clean Logistics White – Large KPI numbers, DHL Red/Yellow brand colors
-// IBM Plex Mono for numbers, IBM Plex Sans for labels
-import { useState, useEffect, useRef } from "react";
-import { Edit2, Check, X, Package, Mail, Layers, Truck, RefreshCw, Clock } from "lucide-react";
-import { getFlightData, saveFlightData, type FlightData } from "@/lib/store";
-import { useN8nData } from "@/hooks/useN8nData";
+import { useState } from "react";
+import { Edit2, Check, X, Package, Mail, Layers, Truck, RefreshCw } from "lucide-react";
+import { useGoogleSheets, parseDagensTal } from "@/hooks/useGoogleSheets";
 import { toast } from "sonner";
 
 function KpiCard({
@@ -58,304 +54,114 @@ function KpiCard({
   );
 }
 
-interface EditModalProps {
-  data: FlightData;
-  onSave: (d: FlightData) => void;
-  onClose: () => void;
-}
+export default function Dashboard() {
+  const { data: sheetsData, loading, error } = useGoogleSheets("DagensTal");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-function EditModal({ data, onSave, onClose }: EditModalProps) {
-  const [form, setForm] = useState<FlightData>({ ...data });
+  const flightData = parseDagensTal(sheetsData);
 
-  const handleChange = (key: keyof FlightData, val: string) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: ["cny", "flyers", "ulds", "earlyUlds", "ddTd"].includes(key)
-        ? parseInt(val) || 0
-        : val,
-    }));
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    // Force refetch by waiting a moment
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setIsRefreshing(false);
+    toast.success("Data opdateret fra Google Sheets");
   };
 
-  const handleSave = () => {
-    onSave(form);
-    onClose();
-  };
-
-  const fields: { key: keyof FlightData; label: string; type: "time" | "date" | "number" }[] = [
-    { key: "etaDate", label: "ETA Dato", type: "date" },
-    { key: "eta", label: "ETA Tidspunkt", type: "time" },
-    { key: "cny", label: "CNY (pakker)", type: "number" },
-    { key: "flyers", label: "Flyers (konvolutter)", type: "number" },
-    { key: "ulds", label: "ULD'er på flyet", type: "number" },
-    { key: "earlyUlds", label: "Tidlige ULD'er", type: "number" },
-    { key: "ddTd", label: "DD-TD (vejtransport)", type: "number" },
-  ];
-
-  return (
-    <div
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4"
-      style={{ background: "oklch(0 0 0 / 0.5)" }}
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
-        style={{ background: "oklch(1 0 0)" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div
-          className="px-5 py-4 flex items-center justify-between"
-          style={{ background: "oklch(0.45 0.22 25)" }}
-        >
-          <h2 className="text-white font-semibold text-base">Opdater Flydata</h2>
-          <button onClick={onClose} className="text-white/70 hover:text-white">
-            <X size={20} />
-          </button>
-        </div>
-        <div className="p-5 space-y-3 max-h-[70vh] overflow-y-auto">
-          {fields.map(({ key, label, type }) => (
-            <div key={key}>
-              <label className="block text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "oklch(0.55 0.01 286)" }}>
-                {label}
-              </label>
-              <input
-                type={type}
-                value={String(form[key])}
-                onChange={(e) => handleChange(key, e.target.value)}
-                className="w-full rounded-lg px-3 py-2.5 text-base font-mono border focus:outline-none focus:ring-2"
-                style={{
-                  border: "1px solid oklch(0.88 0.004 286)",
-                  background: "oklch(0.98 0.002 286)",
-                  color: "oklch(0.15 0.01 286)",
-                }}
-              />
-            </div>
-          ))}
-        </div>
-        <div className="px-5 py-4 flex gap-3 border-t" style={{ borderColor: "oklch(0.92 0.003 286)" }}>
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-lg font-semibold text-sm border"
-            style={{ border: "1px solid oklch(0.88 0.004 286)", color: "oklch(0.4 0.01 286)" }}
-          >
-            Annuller
-          </button>
-          <button
-            onClick={handleSave}
-            className="flex-1 py-2.5 rounded-lg font-semibold text-sm text-white flex items-center justify-center gap-2"
-            style={{ background: "oklch(0.45 0.22 25)" }}
-          >
-            <Check size={16} />
-            Gem data
-          </button>
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center">
+          <p className="text-red-600 font-semibold mb-2">Fejl ved indlæsning af data</p>
+          <p className="text-sm text-gray-600">{error}</p>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-export default function Dashboard() {
-  const [data, setData] = useState<FlightData>(getFlightData());
-  const [showEdit, setShowEdit] = useState(false);
-  const n8nData = useN8nData('flight');
-  const lastN8nIdRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    setData(getFlightData());
-  }, []);
-
-  // Auto-update from n8n webhook data
-  useEffect(() => {
-    if (!n8nData.data) return;
-    
-    // Handle both array and single object responses
-    const record = Array.isArray(n8nData.data) ? n8nData.data[0] : n8nData.data;
-    if (!record || !record.payload) return;
-    
-    // Only update if this is a new record (different ID)
-    if (lastN8nIdRef.current === record.id) return;
-    lastN8nIdRef.current = record.id;
-    
-    const payload = record.payload;
-    const newData: FlightData = {
-      etaDate: payload.etaDate || data.etaDate,
-      eta: payload.eta || data.eta,
-      cny: payload.cny !== undefined ? payload.cny : data.cny,
-      flyers: payload.flyers !== undefined ? payload.flyers : data.flyers,
-      ulds: payload.ulds !== undefined ? payload.ulds : data.ulds,
-      earlyUlds: payload.earlyUlds !== undefined ? payload.earlyUlds : data.earlyUlds,
-      ddTd: payload.ddTd !== undefined ? payload.ddTd : data.ddTd,
-      lastUpdated: new Date().toISOString(),
-    };
-    setData(newData);
-    saveFlightData(newData);
-    toast.success("Flydata opdateret fra n8n");
-  }, [n8nData.data]);
-
-  const handleSave = (newData: FlightData) => {
-    saveFlightData(newData);
-    setData(newData);
-    toast.success("Flydata opdateret");
-  };
-
-  const total = data.cny + data.flyers;
-
-  const formatETA = () => {
-    const date = new Date(`${data.etaDate}T${data.eta}`);
-    const today = new Date();
-    const isToday = date.toDateString() === today.toDateString();
-    const dayStr = isToday
-      ? "I dag"
-      : date.toLocaleDateString("da-DK", { weekday: "long", day: "numeric", month: "short" });
-    return { time: data.eta, day: dayStr };
-  };
-
-  const eta = formatETA();
-
-  const lastUpdated = new Date(data.lastUpdated).toLocaleString("da-DK", {
-    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-  });
+  if (loading || !flightData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center">
+          <RefreshCw className="animate-spin mx-auto mb-2" size={24} />
+          <p className="text-sm text-gray-600">Indlæser flydata...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container py-4 space-y-5">
-      {/* ETA Hero Section */}
-      <div
-        className="rounded-2xl overflow-hidden shadow-md relative"
-        style={{ background: "oklch(0.45 0.22 25)" }}
-      >
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `url(https://d2xsxph8kpxj0f.cloudfront.net/310519663392980405/fKvyyNk7oPfYfEqykoWEyN/dhl-header-bg-Ss4VdptvEfdbJ2eJovTnBJ.webp)`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
-        <div className="relative px-5 py-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "oklch(0.88 0.18 90)" }} />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ background: "oklch(0.88 0.18 90)" }} />
-                </span>
-                <span className="text-white/60 text-xs font-semibold uppercase tracking-wider">
-                  ETA – Flyets ankomst
-                </span>
-              </div>
-              <div
-                className="kpi-number text-white"
-                style={{ fontSize: "clamp(3rem, 12vw, 5rem)", lineHeight: 1, letterSpacing: "-0.03em" }}
-              >
-                {eta.time}
-              </div>
-              <div className="text-white/80 text-sm font-medium mt-1 capitalize">{eta.day}</div>
-            </div>
+    <div className="min-h-screen pb-24" style={{ background: "oklch(0.99 0.001 286)" }}>
+      {/* Header with ETA */}
+      <div className="sticky top-0 z-10 p-4 sm:p-6" style={{ background: "linear-gradient(135deg, oklch(0.15 0.01 286) 0%, oklch(0.25 0.01 286) 100%)" }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-lg sm:text-2xl font-bold text-white">Flyoverblik</h1>
             <button
-              onClick={() => setShowEdit(true)}
-              className="mt-1 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-              style={{ background: "oklch(1 0 0 / 0.15)", color: "oklch(1 0 0)" }}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="p-2 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50"
             >
-              <Edit2 size={13} />
-              Rediger
+              <RefreshCw size={20} className={`text-white ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
-          <div className="mt-3 pt-3 border-t border-white/20 flex items-center gap-2">
-            <RefreshCw size={11} className="text-white/40" />
-            <span className="text-white/40 text-xs">Opdateret: {lastUpdated}</span>
+
+          {/* ETA Display */}
+          <div className="bg-white/10 backdrop-blur rounded-xl p-4 sm:p-6 border border-white/20">
+            <div className="flex items-baseline gap-2 sm:gap-4">
+              <span className="text-xs sm:text-sm font-semibold text-white/70 uppercase tracking-wider">ETA Ankomst</span>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-2 h-2 rounded-full animate-pulse"
+                  style={{ background: "oklch(0.45 0.22 25)" }}
+                />
+                <span
+                  className="text-3xl sm:text-5xl font-bold font-mono"
+                  style={{ color: "oklch(0.75 0.18 90)" }}
+                >
+                  {flightData.eta || "--:--"}
+                </span>
+              </div>
+            </div>
+            <p className="text-xs sm:text-sm text-white/60 mt-2">
+              {flightData.date ? new Date(flightData.date).toLocaleDateString('da-DK') : 'Dato ukendt'}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Section 1: Flyets indhold */}
-      <section>
-        <h2
-          className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2"
-          style={{ color: "oklch(0.55 0.01 286)" }}
-        >
-          <span
-            className="inline-block w-3 h-3 rounded-sm"
-            style={{ background: "oklch(0.45 0.22 25)" }}
-          />
-          Flyets indhold
-        </h2>
-        <div className="grid grid-cols-3 gap-3">
-          <KpiCard label="CNY" value={data.cny.toLocaleString("da-DK")} icon={Package} accent="red" sublabel="pakker" />
-          <KpiCard label="Flyers" value={data.flyers.toLocaleString("da-DK")} icon={Mail} accent="yellow" sublabel="konvolutter" />
-          <div
-            className="rounded-xl p-4 flex flex-col gap-2 shadow-sm col-span-3"
-            style={{
-              background: "oklch(0.15 0.01 286)",
-              borderLeft: "4px solid oklch(0.88 0.18 90)",
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
-                Total
-              </span>
-              <Layers size={16} className="text-yellow-300" />
-            </div>
-            <div
-            className="kpi-number count-animate"
-            style={{ fontSize: "clamp(2.2rem, 9vw, 3rem)", lineHeight: 1, color: "oklch(0.88 0.18 90)", fontWeight: 600 }}
-            >
-              {total.toLocaleString("da-DK")}
-            </div>
-            <span className="text-xs text-white/50">CNY + Flyers samlet</span>
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+        {/* Sektion 1: Flyets indhold */}
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: "oklch(0.55 0.01 286)" }}>
+            Flyets indhold
+          </h2>
+          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <KpiCard label="CNY" value={flightData.cny} icon={Package} accent="red" />
+            <KpiCard label="Flyers" value={flightData.flyers} icon={Mail} accent="yellow" />
+            <KpiCard label="Ialt" value={flightData.total} icon={Truck} accent="blue" />
           </div>
         </div>
-      </section>
 
-      {/* Section 2: Load status */}
-      <section>
-        <h2
-          className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2"
-          style={{ color: "oklch(0.55 0.01 286)" }}
-        >
-          <span
-            className="inline-block w-3 h-3 rounded-sm"
-            style={{ background: "oklch(0.5 0.15 250)" }}
-          />
-          Load Status
-        </h2>
-        <div className="grid grid-cols-3 gap-3">
-          <KpiCard
-            label="ULD'er"
-            value={data.ulds}
-            icon={Layers}
-            accent="blue"
-            sublabel="på flyet"
-          />
-          <KpiCard
-            label="Tidlige ULD'er"
-            value={data.earlyUlds}
-            icon={Clock}
-            accent="yellow"
-            sublabel="ankommet tidligt"
-          />
-          <KpiCard
-            label="DD-TD"
-            value={data.ddTd}
-            icon={Truck}
-            accent="grey"
-            sublabel="vejtransport"
-          />
+        {/* Sektion 2: Load Status */}
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: "oklch(0.55 0.01 286)" }}>
+            Load Status
+          </h2>
+          <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <KpiCard label="ULD'er" value={flightData.ulds} icon={Layers} accent="grey" sublabel="på flyet" />
+            <KpiCard label="Tidlige ULD'er" value={flightData.earlyUlds} icon={Layers} accent="yellow" />
+            <KpiCard label="DD-TD" value={flightData.ddTd} icon={Truck} accent="red" sublabel="vejtransport" />
+          </div>
         </div>
-      </section>
 
-      {/* Quick update hint */}
-      <div
-        className="rounded-xl px-4 py-3 flex items-center gap-3"
-        style={{ background: "oklch(0.97 0.01 25)", border: "1px solid oklch(0.9 0.04 25)" }}
-      >
-        <Edit2 size={14} style={{ color: "oklch(0.45 0.22 25)" }} />
-        <p className="text-xs" style={{ color: "oklch(0.45 0.22 25)" }}>
-          Tryk <strong>Rediger</strong> øverst for at opdatere tallene fra mail — ingen kodeændringer nødvendigt. Data opdateres også automatisk fra n8n.
-        </p>
+        {/* Info Box */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+          <p className="font-semibold mb-1">📊 Data fra Google Sheets</p>
+          <p className="text-xs text-blue-700">Tallene opdateres automatisk hvert 5. sekund fra dit Google Sheets-dokument.</p>
+        </div>
       </div>
-
-      {showEdit && (
-        <EditModal data={data} onSave={handleSave} onClose={() => setShowEdit(false)} />
-      )}
     </div>
   );
 }

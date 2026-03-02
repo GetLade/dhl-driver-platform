@@ -2,7 +2,8 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { getN8nWebhookData, getAllN8nWebhookData } from "./db";
+import { getN8nWebhookData, getAllN8nWebhookData, saveN8nWebhookData } from "./db";
+import { z } from "zod";
 
 export const appRouter = router({
   system: systemRouter,
@@ -28,6 +29,15 @@ export const appRouter = router({
       })
       .query(async ({ input }) => {
         return await getN8nWebhookData(input);
+      }),
+    receiveWebhook: publicProcedure
+      .input(z.object({
+        dataType: z.string(),
+        data: z.record(z.string(), z.any()),
+      }))
+      .mutation(async ({ input }) => {
+        await saveN8nWebhookData(input.dataType, input.data);
+        return { success: true, message: `Webhook data received for ${input.dataType}` };
       }),
   }),
 });

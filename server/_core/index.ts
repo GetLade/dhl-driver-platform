@@ -37,8 +37,18 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   
-  // n8n webhook endpoint - receives data from n8n workflows
-  app.post("/api/webhook/n8n", async (req, res) => {
+  // tRPC API
+  app.use(
+    "/api/trpc",
+    createExpressMiddleware({
+      router: appRouter,
+      createContext,
+    })
+  );
+  
+  // n8n webhook endpoint - MUST be before Vite/static fallback
+  // Using /webhook/n8n instead of /api/webhook/n8n to avoid SPA catch-all on external requests
+  app.post("/webhook/n8n", async (req, res) => {
     try {
       const { dataType, data } = req.body;
       
@@ -56,14 +66,6 @@ async function startServer() {
     }
   });
   
-  // tRPC API
-  app.use(
-    "/api/trpc",
-    createExpressMiddleware({
-      router: appRouter,
-      createContext,
-    })
-  );
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
