@@ -158,7 +158,7 @@ export default function Dashboard() {
 
         {/* Footer */}
         <div className="text-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-200">
-          <p>Platform af Filip Lade</p>
+          <p>Platform af Filip Lade til Pakkenbilen</p>
         </div>
       </div>
     </div>
