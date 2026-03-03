@@ -225,10 +225,9 @@ export default function GTListe() {
           </div>
         </div>
 
-        {/* Info Box */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 mt-6">
-          <p className="font-semibold mb-1">📊 Data fra Google Sheets</p>
-          <p className="text-xs text-blue-700">Tallene opdateres automatisk hvert 5. minut.</p>
+        {/* Footer */}
+        <div className="text-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-200">
+          <p>Platform af Filip Lade</p>
         </div>
       </div>
     </div>
