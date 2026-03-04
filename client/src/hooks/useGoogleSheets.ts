@@ -142,7 +142,10 @@ export function parseGTListe(data: string[][] | null) {
   const packages = [];
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
-    if (!row[1]) break; // Stop at empty rows
+    // Skip completely empty rows (all columns empty)
+    if (!row || row.length === 0 || (row.length === 1 && !row[0])) continue;
+    // Only skip if postnummer is empty
+    if (!row[1]) continue;
     
     packages.push({
       date: row[0],
