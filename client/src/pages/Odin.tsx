@@ -192,7 +192,7 @@ export default function Performance() {
                 <h3 className="font-bold text-lg" style={{ color: "oklch(0.15 0.01 286)" }}>
                   {route.route}
                 </h3>
-                <span className="text-xs font-mono text-gray-500">{route.date}</span>
+                <span className="text-xs font-mono text-gray-500">{route.date ? new Date(route.date).toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}</span>
               </div>
 
               <div className="space-y-4">
