@@ -185,3 +185,79 @@ export function parseStop(data: string[][] | null) {
   
   return stops;
 }
+
+// Parse Statistik sheet - has two sections: Stop stats (A-F) and ODIN stats (G-M)
+export function parseStatistik(data: string[][] | null) {
+  if (!data || data.length < 2) return [];
+  
+  const statisticsMap = new Map();
+  
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+    
+    // Left section: PUD Route (col 0), Målinger (col 1), Avg Meldt (col 2), Avg Total Stops (col 3), Avg SPORH (col 4), Avg Break minutes (col 5)
+    const pudRoute = row[0]?.trim();
+    if (pudRoute) {
+      const avgMeldt = parseFloat(row[2]) || 0;
+      const avgTotalStops = parseFloat(row[3]) || 0;
+      const avgSporh = parseFloat(row[4]) || 0;
+      const avgBreakMinutes = parseFloat(row[5]) || 0;
+      
+      if (!statisticsMap.has(pudRoute)) {
+        statisticsMap.set(pudRoute, {
+          route: pudRoute,
+          avgMeldt,
+          avgTotalStops,
+          avgSporh,
+          avgBreakMinutes,
+          avgTwAdhDL: 0,
+          avgEarlyDL: 0,
+          avgLateDL: 0,
+          avgTwAdhPU: 0,
+          avgEarlyPU: 0,
+        });
+      } else {
+        const existing = statisticsMap.get(pudRoute);
+        existing.avgMeldt = avgMeldt;
+        existing.avgTotalStops = avgTotalStops;
+        existing.avgSporh = avgSporh;
+        existing.avgBreakMinutes = avgBreakMinutes;
+      }
+    }
+    
+    // Right section: Route (col 7), Målinger (col 8), Avg twAdhDL (col 9), Avg earlyDL (col 10), Avg lateDL (col 11), Avg twAdhPU (col 12), Avg earlyPU (col 13)
+    const route = row[7]?.trim();
+    if (route) {
+      const avgTwAdhDL = parseFloat(row[9]) || 0;
+      const avgEarlyDL = parseFloat(row[10]) || 0;
+      const avgLateDL = parseFloat(row[11]) || 0;
+      const avgTwAdhPU = parseFloat(row[12]) || 0;
+      const avgEarlyPU = parseFloat(row[13]) || 0;
+      
+      if (!statisticsMap.has(route)) {
+        statisticsMap.set(route, {
+          route,
+          avgMeldt: 0,
+          avgTotalStops: 0,
+          avgSporh: 0,
+          avgBreakMinutes: 0,
+          avgTwAdhDL,
+          avgEarlyDL,
+          avgLateDL,
+          avgTwAdhPU,
+          avgEarlyPU,
+        });
+      } else {
+        const existing = statisticsMap.get(route);
+        existing.avgTwAdhDL = avgTwAdhDL;
+        existing.avgEarlyDL = avgEarlyDL;
+        existing.avgLateDL = avgLateDL;
+        existing.avgTwAdhPU = avgTwAdhPU;
+        existing.avgEarlyPU = avgEarlyPU;
+      }
+    }
+  }
+  
+  return Array.from(statisticsMap.values());
+}

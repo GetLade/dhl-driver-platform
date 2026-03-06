@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown, TrendingUp, RefreshCw } from "lucide-react";
-import { useGoogleSheets, parseOdin, parseStop } from "@/hooks/useGoogleSheets";
+import { useGoogleSheets, parseOdin, parseStop, parseStatistik } from "@/hooks/useGoogleSheets";
 import { toast } from "sonner";
 
 type SortKey = "route" | "deliveryOnTime" | "pickupOnTime";
@@ -55,17 +55,20 @@ function SortIcon({ colKey, sortKey, sortDir }: { colKey: string; sortKey: SortK
 export default function Performance() {
   const { data: odinData, loading: odinLoading, error: odinError } = useGoogleSheets("Odin");
   const { data: stopData, loading: stopLoading, error: stopError } = useGoogleSheets("Stop");
+  const { data: statistikData, loading: statistikLoading } = useGoogleSheets("Statestik", "A:M");
   const [sortKey, setSortKey] = useState<SortKey>("route");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const odinRoutes = parseOdin(odinData);
   const stops = parseStop(stopData);
+  const statistics = parseStatistik(statistikData);
 
   // Combine ODIN and Stop data by route
   const combinedData = useMemo(() => {
     const combined = odinRoutes.map(route => {
       const stopInfo = stops.find(s => s.pudRoute === route.route);
+      const stats = statistics.find(s => s.route === route.route);
       return {
         ...route,
         meldt: stopInfo?.meldt || 0,
@@ -74,12 +77,17 @@ export default function Performance() {
         breakMinutes: stopInfo?.breakMinutes || 0,
         avgCourierArrivalTm: stopInfo?.avgCourierArrivalTm || '',
         hasStopData: !!stopInfo,
+        avgTotalStops: stats?.avgTotalStops || 0,
+        avgBreakMinutes: stats?.avgBreakMinutes || 0,
+        avgSporh: stats?.avgSporh || 0,
+        avgTwAdhDL: stats?.avgTwAdhDL || 0,
       };
     });
 
     // Also add routes that only have Stop data
     stops.forEach(stop => {
       if (!combined.find(c => c.route === stop.pudRoute)) {
+        const stats = statistics.find(s => s.route === stop.pudRoute);
         combined.push({
           date: stop.date,
           route: stop.pudRoute,
@@ -95,12 +103,16 @@ export default function Performance() {
           breakMinutes: stop.breakMinutes,
           avgCourierArrivalTm: stop.avgCourierArrivalTm,
           hasStopData: true,
+          avgTotalStops: stats?.avgTotalStops || 0,
+          avgBreakMinutes: stats?.avgBreakMinutes || 0,
+          avgSporh: stats?.avgSporh || 0,
+          avgTwAdhDL: stats?.avgTwAdhDL || 0,
         });
       }
     });
 
     return combined;
-  }, [odinRoutes, stops]);
+  }, [odinRoutes, stops, statistics]);
 
   const sortedRoutes = useMemo(() => {
     const sorted = [...combinedData].sort((a, b) => {
@@ -129,58 +141,45 @@ export default function Performance() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsRefreshing(false);
-    toast.success("Data opdateret fra Google Sheets");
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast.success("Data opdateret");
+    }, 500);
   };
 
-  const loading = odinLoading || stopLoading;
-  const error = odinError || stopError;
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-red-600 font-semibold mb-2">Fejl ved indlæsning af data</p>
-          <p className="text-sm text-gray-600">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center">
-          <RefreshCw className="animate-spin mx-auto mb-2" size={24} />
-          <p className="text-sm text-gray-600">Indlæser performance-data...</p>
-        </div>
-      </div>
-    );
-  }
+  const loading = odinLoading || stopLoading || statistikLoading;
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: "oklch(0.99 0.001 286)" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "oklch(0.98 0.001 286)" }}>
       {/* Header */}
-      <div className="sticky top-0 z-10 p-4 sm:p-6" style={{ background: "linear-gradient(135deg, oklch(0.15 0.01 286) 0%, oklch(0.25 0.01 286) 100%)" }}>
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-lg sm:text-2xl font-bold text-white">Performance</h1>
-            <p className="text-xs sm:text-sm text-white/70 mt-1">Rute Performance & Stop Oversigt</p>
+            <h1 className="text-2xl font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
+              Performance
+            </h1>
+            <p className="text-sm text-gray-600">Rute Performance & Stop Oversigt</p>
           </div>
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="p-2 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50"
+            className="p-2 hover:bg-gray-100 rounded-lg transition"
           >
-            <RefreshCw size={20} className={`text-white ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
           </button>
         </div>
       </div>
 
-      {/* Routes List */}
-      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-3">
-        {sortedRoutes.length === 0 ? (
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 pb-24">
+        {loading ? (
+          <div className="text-center py-12 text-gray-500">
+            <div className="inline-block animate-spin">
+              <RefreshCw size={32} />
+            </div>
+            <p className="mt-2">Indlæser data...</p>
+          </div>
+        ) : sortedRoutes.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <TrendingUp size={32} className="mx-auto mb-2 opacity-50" />
             <p>Ingen data fundet</p>
@@ -196,26 +195,37 @@ export default function Performance() {
               </div>
 
               <div className="space-y-4">
-                {/* ODIN Performance Data */}
+                {/* ODIN Performance Data with Statistics */}
                 {route.twAdhLeveris > 0 || route.twAdhAfhent > 0 ? (
                   <>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold" style={{ color: "oklch(0.55 0.01 286)" }}>
-                          Leveringer
-                        </span>
-                        <button
-                          onClick={() => handleSort("deliveryOnTime")}
-                          className="flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-gray-900"
-                        >
-                          <SortIcon colKey="deliveryOnTime" sortKey={sortKey} sortDir={sortDir} />
-                        </button>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-semibold" style={{ color: "oklch(0.55 0.01 286)" }}>
+                            Leveringer
+                          </span>
+                          <button
+                            onClick={() => handleSort("deliveryOnTime")}
+                            className="flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-gray-900"
+                          >
+                            <SortIcon colKey="deliveryOnTime" sortKey={sortKey} sortDir={sortDir} />
+                          </button>
+                        </div>
+                        <PercentBar
+                          onTime={route.twAdhLeveris}
+                          early={route.tidligLeveris}
+                          late={route.senLeveris}
+                        />
                       </div>
-                      <PercentBar
-                        onTime={route.twAdhLeveris}
-                        early={route.tidligLeveris}
-                        late={route.senLeveris}
-                      />
+                      {route.avgTwAdhDL > 0 && (
+                        <div className="flex flex-col justify-center">
+                          <span className="text-xs text-gray-500 mb-1">Gennemsnit</span>
+                          <p className="text-2xl font-bold" style={{ color: "oklch(0.55 0.01 286)" }}>
+                            {route.avgTwAdhDL.toFixed(1)}%
+                          </p>
+                          <span className="text-xs text-gray-400 mt-1">Avg twAdhDL</span>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -241,9 +251,9 @@ export default function Performance() {
                   <div className="text-sm text-gray-500 italic">Ingen ODIN-data tilgængelig</div>
                 )}
 
-                {/* Stop Data */}
+                {/* Stop Data with Statistics */}
                 {route.hasStopData && (
-                  <div className="border-t border-gray-200 pt-4 space-y-2">
+                  <div className="border-t border-gray-200 pt-4 space-y-3">
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <span className="text-gray-600">Meldt:</span>
@@ -256,18 +266,27 @@ export default function Performance() {
                         <p className="font-bold text-lg" style={{ color: "oklch(0.15 0.01 286)" }}>
                           {route.totalStops}
                         </p>
+                        {route.avgTotalStops > 0 && (
+                          <span className="text-xs text-gray-500">Avg: {route.avgTotalStops.toFixed(1)}</span>
+                        )}
                       </div>
                       <div>
                         <span className="text-gray-600">SPORH:</span>
                         <p className="font-bold text-lg" style={{ color: "oklch(0.15 0.01 286)" }}>
                           {route.sporh}
                         </p>
+                        {route.avgSporh > 0 && (
+                          <span className="text-xs text-gray-500">Avg: {route.avgSporh.toFixed(1)}</span>
+                        )}
                       </div>
                       <div>
                         <span className="text-gray-600">Pause:</span>
                         <p className="font-bold text-lg" style={{ color: "oklch(0.15 0.01 286)" }}>
                           {route.breakMinutes} min
                         </p>
+                        {route.avgBreakMinutes > 0 && (
+                          <span className="text-xs text-gray-500">Avg: {route.avgBreakMinutes.toFixed(1)} min</span>
+                        )}
                       </div>
                     </div>
                     {route.avgCourierArrivalTm && (
