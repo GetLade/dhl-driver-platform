@@ -237,8 +237,8 @@ export default function Performance() {
                     {route.route}
                   </h3>
                   {hasPerformanceAlert(route) && (
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-md" style={{ background: "oklch(0.97 0.04 25)" }}>
-                      <AlertCircle size={14} style={{ color: "oklch(0.45 0.22 25)" }} />
+                    <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-md" style={{ background: "oklch(0.97 0.04 25)" }}>
+                      <AlertCircle size={12} style={{ color: "oklch(0.45 0.22 25)" }} />
                       <span className="text-xs font-semibold" style={{ color: "oklch(0.45 0.22 25)" }}>Under 90%</span>
                     </div>
                   )}
@@ -268,9 +268,9 @@ export default function Performance() {
                         late={route.senLeveris}
                       />
                       {route.avgTwAdhDL > 0 && (
-                        <div className="mt-3 p-2 rounded-lg" style={{ background: "oklch(0.96 0.01 286)" }}>
+                        <div className="mt-2 p-1.5 rounded-lg" style={{ background: "oklch(0.96 0.01 286)" }}>
                           <span className="text-xs text-gray-500">Gennemsnit</span>
-                          <p className="text-lg font-bold" style={{ color: "oklch(0.55 0.01 286)" }}>
+                          <p className="text-sm font-bold" style={{ color: "oklch(0.55 0.01 286)" }}>
                             {route.avgTwAdhDL.toFixed(1)}% Avg twAdhDL
                           </p>
                         </div>
@@ -345,14 +345,12 @@ export default function Performance() {
                       </div>
                     )}
                     {/* Average Breaks Display */}
-                    {route.avgBreakMinutes > 0 && (
-                      <div className="p-2 rounded-lg" style={{ background: "oklch(0.96 0.01 286)" }}>
-                        <span className="text-xs text-gray-500">Gennemsnit</span>
-                        <p className="text-sm font-semibold" style={{ color: "oklch(0.55 0.01 286)" }}>
-                          {route.avgBreakMinutes.toFixed(1)} min gennemsn. pause
-                        </p>
-                      </div>
-                    )}
+                    <div className="p-1.5 rounded-lg" style={{ background: "oklch(0.96 0.01 286)" }}>
+                      <span className="text-xs text-gray-500">Gennemsnit</span>
+                      <p className="text-sm font-semibold" style={{ color: "oklch(0.55 0.01 286)" }}>
+                        {route.avgBreakMinutes.toFixed(1)} min gennemsn. pause
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

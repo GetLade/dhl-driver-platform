@@ -18,12 +18,15 @@
 - [x] Fixed Statestik sheet name (was "Statistik", now "Statestik")
 - [x] Fixed column indices in parseStatistik (Avg twAdhDL now uses column J instead of I)
 
-## In Progress Features
+## Recently Completed Features
 - [x] Add visual distinction for averages (subtle background color or "Gennemsnit" label)
 - [x] Implement performance alerts for routes below 90% delivery success
 - [x] Include avg breaks in minutes on Performance page for each route
 - [x] Reposition "Gennemsnit Avg twAdhDL" under leveringer bar instead of beside it
 - [x] Add export/share performance reports functionality
+- [x] Make Gennemsnit boxes smaller (reduced padding and font size)
+- [x] Make "Under 90%" warning label smaller (reduced icon and padding)
+- [x] Show average pause for all routes (including when 0.0 min)
 
 ## Known Behavior
 - Average statistics (Avg Total Stops, Avg SPORH, Avg Break minutes) show current day values initially
