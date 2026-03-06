@@ -30,6 +30,7 @@
 - [x] Add "Avg:" label for pause (matching Total Stops format)
 - [x] Make Avg twAdhDL even smaller and less prominent (minimal styling)
 - [x] Further reduce "Under 90%" badge size for less focus
+- [x] Implement responsive grid layout (1 col mobile, 2 col tablet, 3 col desktop)
 
 ## Known Behavior
 - Average statistics (Avg Total Stops, Avg SPORH, Avg Break minutes) show current day values initially
