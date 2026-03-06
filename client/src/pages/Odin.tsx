@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, TrendingUp, RefreshCw } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowUpDown, ArrowUp, ArrowDown, TrendingUp, RefreshCw, AlertCircle, Download } from "lucide-react";
 import { useGoogleSheets, parseOdin, parseStop, parseStatistik } from "@/hooks/useGoogleSheets";
 import { toast } from "sonner";
 
@@ -147,6 +147,41 @@ export default function Performance() {
     }, 500);
   };
 
+  // Check if route has performance alert (delivery success < 90%)
+  const hasPerformanceAlert = (route: typeof sortedRoutes[0]) => {
+    return route.twAdhLeveris > 0 && route.twAdhLeveris < 90;
+  };
+
+  // Export performance report
+  const handleExportReport = () => {
+    const reportData = sortedRoutes.map(route => ({
+      Route: route.route,
+      Date: route.date ? new Date(route.date).toLocaleDateString('da-DK') : '',
+      'Delivery %': route.twAdhLeveris > 0 ? `${route.twAdhLeveris}%` : 'N/A',
+      'Avg Delivery %': route.avgTwAdhDL > 0 ? `${route.avgTwAdhDL.toFixed(1)}%` : 'N/A',
+      'Total Stops': route.totalStops,
+      'Avg Stops': route.avgTotalStops > 0 ? route.avgTotalStops.toFixed(1) : 'N/A',
+      'Breaks (min)': route.breakMinutes,
+      'Avg Breaks (min)': route.avgBreakMinutes > 0 ? route.avgBreakMinutes.toFixed(1) : 'N/A',
+    }));
+
+    const csvContent = [
+      Object.keys(reportData[0]).join(','),
+      ...reportData.map(row => Object.values(row).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `performance-report-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    toast.success('Rapport eksporteret');
+  };
+
   const loading = odinLoading || stopLoading || statistikLoading;
 
   return (
@@ -160,13 +195,22 @@ export default function Performance() {
             </h1>
             <p className="text-sm text-gray-600">Rute Performance & Stop Oversigt</p>
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="p-2 hover:bg-gray-100 rounded-lg transition"
-          >
-            <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleExportReport}
+              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              title="Eksporter rapport"
+            >
+              <Download size={20} />
+            </button>
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="p-2 hover:bg-gray-100 rounded-lg transition"
+            >
+              <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -188,9 +232,17 @@ export default function Performance() {
           sortedRoutes.map((route, idx) => (
             <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-lg" style={{ color: "oklch(0.15 0.01 286)" }}>
-                  {route.route}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-lg" style={{ color: "oklch(0.15 0.01 286)" }}>
+                    {route.route}
+                  </h3>
+                  {hasPerformanceAlert(route) && (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md" style={{ background: "oklch(0.97 0.04 25)" }}>
+                      <AlertCircle size={14} style={{ color: "oklch(0.45 0.22 25)" }} />
+                      <span className="text-xs font-semibold" style={{ color: "oklch(0.45 0.22 25)" }}>Under 90%</span>
+                    </div>
+                  )}
+                </div>
                 <span className="text-xs font-mono text-gray-500">{route.date ? new Date(route.date).toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}</span>
               </div>
 
@@ -198,32 +250,29 @@ export default function Performance() {
                 {/* ODIN Performance Data with Statistics */}
                 {route.twAdhLeveris > 0 || route.twAdhAfhent > 0 ? (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-semibold" style={{ color: "oklch(0.55 0.01 286)" }}>
-                            Leveringer
-                          </span>
-                          <button
-                            onClick={() => handleSort("deliveryOnTime")}
-                            className="flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-gray-900"
-                          >
-                            <SortIcon colKey="deliveryOnTime" sortKey={sortKey} sortDir={sortDir} />
-                          </button>
-                        </div>
-                        <PercentBar
-                          onTime={route.twAdhLeveris}
-                          early={route.tidligLeveris}
-                          late={route.senLeveris}
-                        />
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-semibold" style={{ color: "oklch(0.55 0.01 286)" }}>
+                          Leveringer
+                        </span>
+                        <button
+                          onClick={() => handleSort("deliveryOnTime")}
+                          className="flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-gray-900"
+                        >
+                          <SortIcon colKey="deliveryOnTime" sortKey={sortKey} sortDir={sortDir} />
+                        </button>
                       </div>
+                      <PercentBar
+                        onTime={route.twAdhLeveris}
+                        early={route.tidligLeveris}
+                        late={route.senLeveris}
+                      />
                       {route.avgTwAdhDL > 0 && (
-                        <div className="flex flex-col justify-center">
-                          <span className="text-xs text-gray-500 mb-1">Gennemsnit</span>
-                          <p className="text-2xl font-bold" style={{ color: "oklch(0.55 0.01 286)" }}>
-                            {route.avgTwAdhDL.toFixed(1)}%
+                        <div className="mt-3 p-2 rounded-lg" style={{ background: "oklch(0.96 0.01 286)" }}>
+                          <span className="text-xs text-gray-500">Gennemsnit</span>
+                          <p className="text-lg font-bold" style={{ color: "oklch(0.55 0.01 286)" }}>
+                            {route.avgTwAdhDL.toFixed(1)}% Avg twAdhDL
                           </p>
-                          <span className="text-xs text-gray-400 mt-1">Avg twAdhDL</span>
                         </div>
                       )}
                     </div>
@@ -293,6 +342,15 @@ export default function Performance() {
                       <div className="text-sm">
                         <span className="text-gray-600">Gennemsn. ankomst:</span>
                         <p className="font-semibold">{route.avgCourierArrivalTm}</p>
+                      </div>
+                    )}
+                    {/* Average Breaks Display */}
+                    {route.avgBreakMinutes > 0 && (
+                      <div className="p-2 rounded-lg" style={{ background: "oklch(0.96 0.01 286)" }}>
+                        <span className="text-xs text-gray-500">Gennemsnit</span>
+                        <p className="text-sm font-semibold" style={{ color: "oklch(0.55 0.01 286)" }}>
+                          {route.avgBreakMinutes.toFixed(1)} min gennemsn. pause
+                        </p>
                       </div>
                     )}
                   </div>
