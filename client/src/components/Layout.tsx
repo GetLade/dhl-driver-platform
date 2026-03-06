@@ -5,7 +5,7 @@ import { Plane, BarChart2, List } from "lucide-react";
 
 const tabs = [
   { path: "/", label: "Flyoverblik", icon: Plane },
-  { path: "/odin", label: "ODIN", icon: BarChart2 },
+  { path: "/performance", label: "Performance", icon: BarChart2 },
   { path: "/gtliste", label: "Tag fra liste", icon: List },
 ];
 
@@ -58,11 +58,11 @@ export default function Layout({ children }: LayoutProps) {
       >
         <div className="flex">
           {tabs.map(({ path, label, icon: Icon }) => {
-            const isActive = location === path;
+            const isActive = location === path || (path === "/performance" && location === "/odin");
             return (
               <Link
                 key={path}
-                href={path}
+                href={path === "/performance" ? "/performance" : path}
                 className="flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 transition-colors"
                 style={{
                   color: isActive ? "oklch(0.45 0.22 25)" : "oklch(0.55 0.01 286)",

@@ -159,3 +159,29 @@ export function parseGTListe(data: string[][] | null) {
   
   return packages;
 }
+
+// Parse Stop sheet
+export function parseStop(data: string[][] | null) {
+  if (!data || data.length < 2) return [];
+  
+  const stops = [];
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    // Skip completely empty rows
+    if (!row || row.length === 0 || (row.length === 1 && !row[0])) continue;
+    // Only skip if PUD Route is empty
+    if (!row[1]) continue;
+    
+    stops.push({
+      date: row[0],
+      pudRoute: row[1],
+      meldt: parseInt(row[2]) || 0,
+      totalStops: parseInt(row[3]) || 0,
+      sporh: parseInt(row[4]) || 0,
+      breakMinutes: parseInt(row[5]) || 0,
+      avgCourierArrivalTm: row[6] || '',
+    });
+  }
+  
+  return stops;
+}
