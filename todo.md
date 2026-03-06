@@ -27,6 +27,9 @@
 - [x] Make Gennemsnit boxes smaller (reduced padding and font size)
 - [x] Make "Under 90%" warning label smaller (reduced icon and padding)
 - [x] Show average pause for all routes (including when 0.0 min)
+- [x] Add "Avg:" label for pause (matching Total Stops format)
+- [x] Make Avg twAdhDL even smaller and less prominent (minimal styling)
+- [x] Further reduce "Under 90%" badge size for less focus
 
 ## Known Behavior
 - Average statistics (Avg Total Stops, Avg SPORH, Avg Break minutes) show current day values initially
