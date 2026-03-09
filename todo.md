@@ -31,6 +31,7 @@
 - [x] Make Avg twAdhDL even smaller and less prominent (minimal styling)
 - [x] Further reduce "Under 90%" badge size for less focus
 - [x] Implement responsive grid layout (1 col mobile, 2 col tablet, 3 col desktop)
+- [x] Add "Sidst opdateret" timestamp to Tag fra listen page header
 
 ## Known Behavior
 - Average statistics (Avg Total Stops, Avg SPORH, Avg Break minutes) show current day values initially

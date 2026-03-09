@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw } from "lucide-react";
 import { useGoogleSheets, parseGTListe } from "@/hooks/useGoogleSheets";
 import { toast } from "sonner";
@@ -17,6 +17,13 @@ export default function GTListe() {
   const [sortKey, setSortKey] = useState<SortKey>("postnummer");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
+  useEffect(() => {
+    if (sheetsData && !loading) {
+      setLastUpdated(new Date());
+    }
+  }, [sheetsData, loading]);
 
   const packages = parseGTListe(sheetsData);
 
@@ -95,6 +102,9 @@ export default function GTListe() {
         <div className="max-w-4xl mx-auto flex items-center justify-between mb-4">
           <div>
             <h1 className="text-lg sm:text-2xl font-bold text-white">Tag fra liste</h1>
+            <p className="text-xs sm:text-sm text-gray-300 mt-1">
+              Sidst opdateret: {lastUpdated.toLocaleString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </p>
           </div>
           <button
             onClick={handleRefresh}
