@@ -18,12 +18,18 @@ export default function GTListe() {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [lastDataHash, setLastDataHash] = useState<string>('');
 
   useEffect(() => {
     if (sheetsData && !loading) {
-      setLastUpdated(new Date());
+      // Only update timestamp if data actually changed
+      const currentHash = JSON.stringify(sheetsData);
+      if (currentHash !== lastDataHash) {
+        setLastUpdated(new Date());
+        setLastDataHash(currentHash);
+      }
     }
-  }, [sheetsData, loading]);
+  }, [sheetsData, loading, lastDataHash]);
 
   const packages = parseGTListe(sheetsData);
 

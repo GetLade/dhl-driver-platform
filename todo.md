@@ -32,6 +32,7 @@
 - [x] Further reduce "Under 90%" badge size for less focus
 - [x] Implement responsive grid layout (1 col mobile, 2 col tablet, 3 col desktop)
 - [x] Add "Sidst opdateret" timestamp to Tag fra listen page header
+- [x] Fix timestamp to only update when data actually changes (not on every reload)
 
 ## Known Behavior
 - Average statistics (Avg Total Stops, Avg SPORH, Avg Break minutes) show current day values initially
