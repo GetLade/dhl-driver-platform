@@ -64,9 +64,23 @@ export default function Performance() {
   const stops = parseStop(stopData);
   const statistics = parseStatistik(statistikData);
 
-  // Combine ODIN and Stop data by route
+  // Combine ODIN and Stop data by route - ensure same day or show only available data
   const combinedData = useMemo(() => {
-    const combined = odinRoutes.map(route => {
+    // Get the latest date from Stop data
+    const latestStopDate = stops.length > 0 
+      ? new Date(Math.max(...stops.map(s => new Date(s.date).getTime())))
+      : null;
+
+    // Filter ODIN data to only include routes from the same day as Stop data
+    // If Stop data exists, only show ODIN data from that same date
+    const filteredOdinRoutes = latestStopDate
+      ? odinRoutes.filter(route => {
+          const routeDate = new Date(route.date);
+          return routeDate.toDateString() === latestStopDate.toDateString();
+        })
+      : odinRoutes;
+
+    const combined = filteredOdinRoutes.map(route => {
       const stopInfo = stops.find(s => s.pudRoute === route.route);
       const stats = statistics.find(s => s.route === route.route);
       return {
@@ -84,7 +98,7 @@ export default function Performance() {
       };
     });
 
-    // Also add routes that only have Stop data
+    // Also add routes that only have Stop data (from the latest Stop date)
     stops.forEach(stop => {
       if (!combined.find(c => c.route === stop.pudRoute)) {
         const stats = statistics.find(s => s.route === stop.pudRoute);
@@ -297,52 +311,57 @@ export default function Performance() {
                     </div>
                   </>
                 ) : (
-                  <div className="text-sm text-gray-500 italic">Ingen ODIN-data tilgængelig</div>
+                  <div className="text-center py-4 text-gray-400 text-sm">
+                    Ingen ODIN-data tilgængelig
+                  </div>
                 )}
 
-                {/* Stop Data with Statistics */}
+                {/* Stop Data */}
                 {route.hasStopData && (
-                  <div className="border-t border-gray-200 pt-4 space-y-3">
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <span className="text-gray-600">Meldt:</span>
-                        <p className="font-bold text-lg" style={{ color: "oklch(0.15 0.01 286)" }}>
-                          {route.meldt}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Total Stops:</span>
-                        <p className="font-bold text-lg" style={{ color: "oklch(0.15 0.01 286)" }}>
-                          {route.totalStops}
-                        </p>
-                        {route.avgTotalStops > 0 && (
-                          <span className="text-xs text-gray-500">Avg: {route.avgTotalStops.toFixed(1)}</span>
-                        )}
-                      </div>
-                      <div>
-                        <span className="text-gray-600">SPORH:</span>
-                        <p className="font-bold text-lg" style={{ color: "oklch(0.15 0.01 286)" }}>
-                          {route.sporh}
-                        </p>
-                        {route.avgSporh > 0 && (
-                          <span className="text-xs text-gray-500">Avg: {route.avgSporh.toFixed(1)}</span>
-                        )}
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Pause:</span>
-                        <p className="font-bold text-lg" style={{ color: "oklch(0.15 0.01 286)" }}>
-                          {route.breakMinutes} min
-                        </p>
-                        <span className="text-xs text-gray-500">Avg: {route.avgBreakMinutes.toFixed(1)} min</span>
-                      </div>
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100">
+                    <div>
+                      <p className="text-xs text-gray-600 font-semibold">Meldt:</p>
+                      <p className="text-lg font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
+                        {route.meldt}
+                      </p>
                     </div>
-                    {route.avgCourierArrivalTm && (
-                      <div className="text-sm">
-                        <span className="text-gray-600">Gennemsn. ankomst:</span>
-                        <p className="font-semibold">{route.avgCourierArrivalTm}</p>
-                      </div>
-                    )}
+                    <div>
+                      <p className="text-xs text-gray-600 font-semibold">Total Stops:</p>
+                      <p className="text-lg font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
+                        {route.totalStops}
+                      </p>
+                      {route.avgTotalStops > 0 && (
+                        <p className="text-xs text-gray-500">Avg: {route.avgTotalStops.toFixed(1)}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 font-semibold">SPORH:</p>
+                      <p className="text-lg font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
+                        {route.sporh}
+                      </p>
+                      {route.avgSporh > 0 && (
+                        <p className="text-xs text-gray-500">Avg: {route.avgSporh.toFixed(1)}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 font-semibold">Pause:</p>
+                      <p className="text-lg font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
+                        {route.breakMinutes} min
+                      </p>
+                      {route.avgBreakMinutes >= 0 && (
+                        <p className="text-xs text-gray-500">Avg: {route.avgBreakMinutes.toFixed(1)} min</p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
+                {/* Average Arrival Time */}
+                {route.avgCourierArrivalTm && (
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-xs text-gray-600 font-semibold">Gennemsn. ankomst:</p>
+                    <p className="text-lg font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
+                      {route.avgCourierArrivalTm}
+                    </p>
                   </div>
                 )}
               </div>
