@@ -66,17 +66,26 @@ export default function Performance() {
 
   // Combine ODIN and Stop data by route - ensure same day or show only available data
   const combinedData = useMemo(() => {
-    // Get the latest date from Stop data
+    // Get the latest date from BOTH Stop and ODIN data
     const latestStopDate = stops.length > 0 
       ? new Date(Math.max(...stops.map(s => new Date(s.date).getTime())))
       : null;
+    
+    const latestOdinDate = odinRoutes.length > 0
+      ? new Date(Math.max(...odinRoutes.map(r => new Date(r.date).getTime())))
+      : null;
+    
+    // Use the latest date from either source
+    const latestDate = !latestStopDate ? latestOdinDate 
+      : !latestOdinDate ? latestStopDate
+      : latestOdinDate > latestStopDate ? latestOdinDate
+      : latestStopDate;
 
-    // Filter ODIN data to only include routes from the same day as Stop data
-    // If Stop data exists, only show ODIN data from that same date
-    const filteredOdinRoutes = latestStopDate
+    // Filter ODIN data to only include routes from the latest date
+    const filteredOdinRoutes = latestDate
       ? odinRoutes.filter(route => {
           const routeDate = new Date(route.date);
-          return routeDate.toDateString() === latestStopDate.toDateString();
+          return routeDate.toDateString() === latestDate.toDateString();
         })
       : odinRoutes;
 
