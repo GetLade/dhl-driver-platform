@@ -33,7 +33,7 @@
 - [x] Implement responsive grid layout (1 col mobile, 2 col tablet, 3 col desktop)
 - [x] Add "Sidst opdateret" timestamp to Tag fra listen page header
 - [x] Fix timestamp to only update when data actually changes (not on every reload)
-- [x] Ensure ODIN and Stop data are always from same day - clear old ODIN data when new Stop data arrives
+- [x] Fix: Only show data from the newest date - filter both ODIN and Stop to same latest date
 
 ## Known Behavior
 - Average statistics (Avg Total Stops, Avg SPORH, Avg Break minutes) show current day values initially

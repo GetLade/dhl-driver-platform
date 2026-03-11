@@ -107,8 +107,15 @@ export default function Performance() {
       };
     });
 
-    // Also add routes that only have Stop data (from the latest Stop date)
-    stops.forEach(stop => {
+    // Also add routes that only have Stop data (from the latest date)
+    const filteredStops = latestDate
+      ? stops.filter(stop => {
+          const stopDate = new Date(stop.date);
+          return stopDate.toDateString() === latestDate.toDateString();
+        })
+      : stops;
+    
+    filteredStops.forEach(stop => {
       if (!combined.find(c => c.route === stop.pudRoute)) {
         const stats = statistics.find(s => s.route === stop.pudRoute);
         combined.push({
