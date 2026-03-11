@@ -11,7 +11,14 @@ export function useGoogleSheets(sheetName: string, range: string = 'A:H') {
   const [data, setData] = useState<string[][] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastDataHash, setLastDataHash] = useState<string>('');
+  const storageKey = `sheets_hash_${sheetName}_${range}`;
+  const [lastDataHash, setLastDataHash] = useState<string>(() => {
+    // Initialize from localStorage to preserve hash across page reloads
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(storageKey) || '';
+    }
+    return '';
+  });
 
   // Check if current time is within polling window (05:00-09:00 CET)
   const isWithinPollingWindow = () => {
@@ -49,6 +56,10 @@ export function useGoogleSheets(sheetName: string, range: string = 'A:H') {
         if (newHash !== lastDataHash) {
           setData(newData);
           setLastDataHash(newHash);
+          // Persist hash to localStorage so it survives page reloads
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(storageKey, newHash);
+          }
         }
         
         setError(null);

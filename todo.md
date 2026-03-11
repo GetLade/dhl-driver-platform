@@ -34,6 +34,7 @@
 - [x] Add "Sidst opdateret" timestamp to Tag fra listen page header
 - [x] Fix timestamp to only update when data actually changes (not on every reload)
 - [x] Ensure ODIN and Stop data are always from same day - always show newest date from either source
+- [x] Fix GTListe timestamp to only update when data actually changes (using localStorage persistence)
 
 ## Known Behavior
 - Average statistics (Avg Total Stops, Avg SPORH, Avg Break minutes) show current day values initially
