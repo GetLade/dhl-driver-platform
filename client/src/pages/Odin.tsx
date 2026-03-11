@@ -66,42 +66,22 @@ export default function Performance() {
 
   // Combine ODIN and Stop data by route - ensure same day or show only available data
   const combinedData = useMemo(() => {
-    // Get the latest date from both ODIN and Stop data
-    const latestOdinDate = odinRoutes.length > 0 
-      ? new Date(Math.max(...odinRoutes.map(r => new Date(r.date).getTime())))
-      : null;
+    // Get the latest date from Stop data
     const latestStopDate = stops.length > 0 
       ? new Date(Math.max(...stops.map(s => new Date(s.date).getTime())))
       : null;
 
-    // Determine the latest date overall (from either ODIN or Stop)
-    let latestDate: Date | null = null;
-    if (latestOdinDate && latestStopDate) {
-      latestDate = latestOdinDate > latestStopDate ? latestOdinDate : latestStopDate;
-    } else if (latestOdinDate) {
-      latestDate = latestOdinDate;
-    } else if (latestStopDate) {
-      latestDate = latestStopDate;
-    }
-
-    // Filter ODIN data to only include routes from the latest date
-    const filteredOdinRoutes = latestDate
+    // Filter ODIN data to only include routes from the same day as Stop data
+    // If Stop data exists, only show ODIN data from that same date
+    const filteredOdinRoutes = latestStopDate
       ? odinRoutes.filter(route => {
           const routeDate = new Date(route.date);
-          return routeDate.toDateString() === latestDate.toDateString();
+          return routeDate.toDateString() === latestStopDate.toDateString();
         })
       : odinRoutes;
 
-    // Filter Stop data to only include routes from the latest date
-    const filteredStops = latestDate
-      ? stops.filter(stop => {
-          const stopDate = new Date(stop.date);
-          return stopDate.toDateString() === latestDate.toDateString();
-        })
-      : stops;
-
     const combined = filteredOdinRoutes.map(route => {
-      const stopInfo = filteredStops.find(s => s.pudRoute === route.route);
+      const stopInfo = stops.find(s => s.pudRoute === route.route);
       const stats = statistics.find(s => s.route === route.route);
       return {
         ...route,
@@ -118,8 +98,8 @@ export default function Performance() {
       };
     });
 
-    // Also add routes that only have Stop data (from the latest date)
-    filteredStops.forEach(stop => {
+    // Also add routes that only have Stop data (from the latest Stop date)
+    stops.forEach(stop => {
       if (!combined.find(c => c.route === stop.pudRoute)) {
         const stats = statistics.find(s => s.route === stop.pudRoute);
         combined.push({
