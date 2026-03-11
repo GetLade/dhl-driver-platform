@@ -89,8 +89,16 @@ export default function Performance() {
         })
       : odinRoutes;
 
+    // Filter Stop data to only include routes from the latest date
+    const filteredStops = latestDate
+      ? stops.filter(stop => {
+          const stopDate = new Date(stop.date);
+          return stopDate.toDateString() === latestDate.toDateString();
+        })
+      : stops;
+
     const combined = filteredOdinRoutes.map(route => {
-      const stopInfo = stops.find(s => s.pudRoute === route.route);
+      const stopInfo = filteredStops.find(s => s.pudRoute === route.route);
       const stats = statistics.find(s => s.route === route.route);
       return {
         ...route,
@@ -108,13 +116,6 @@ export default function Performance() {
     });
 
     // Also add routes that only have Stop data (from the latest date)
-    const filteredStops = latestDate
-      ? stops.filter(stop => {
-          const stopDate = new Date(stop.date);
-          return stopDate.toDateString() === latestDate.toDateString();
-        })
-      : stops;
-    
     filteredStops.forEach(stop => {
       if (!combined.find(c => c.route === stop.pudRoute)) {
         const stats = statistics.find(s => s.route === stop.pudRoute);
