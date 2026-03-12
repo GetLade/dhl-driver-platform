@@ -58,7 +58,6 @@ export default function Performance() {
   const { data: statistikData, loading: statistikLoading } = useGoogleSheets("Statestik", "A:M");
   const [sortKey, setSortKey] = useState<SortKey>("route");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const odinRoutes = parseOdin(odinData);
   const stops = parseStop(stopData);
@@ -170,48 +169,14 @@ export default function Performance() {
     }
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-      toast.success("Data opdateret");
-    }, 500);
-  };
+
 
   // Check if route has performance alert (delivery success < 90%)
   const hasPerformanceAlert = (route: typeof sortedRoutes[0]) => {
     return route.twAdhLeveris > 0 && route.twAdhLeveris < 90;
   };
 
-  // Export performance report
-  const handleExportReport = () => {
-    const reportData = sortedRoutes.map(route => ({
-      Route: route.route,
-      Date: route.date ? new Date(route.date).toLocaleDateString('da-DK') : '',
-      'Delivery %': route.twAdhLeveris > 0 ? `${route.twAdhLeveris}%` : 'N/A',
-      'Avg Delivery %': route.avgTwAdhDL > 0 ? `${route.avgTwAdhDL.toFixed(1)}%` : 'N/A',
-      'Total Stops': route.totalStops,
-      'Avg Stops': route.avgTotalStops > 0 ? route.avgTotalStops.toFixed(1) : 'N/A',
-      'Breaks (min)': route.breakMinutes,
-      'Avg Breaks (min)': route.avgBreakMinutes > 0 ? route.avgBreakMinutes.toFixed(1) : 'N/A',
-    }));
 
-    const csvContent = [
-      Object.keys(reportData[0]).join(','),
-      ...reportData.map(row => Object.values(row).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `performance-report-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    toast.success('Rapport eksporteret');
-  };
 
   const loading = odinLoading || stopLoading || statistikLoading;
 
@@ -226,22 +191,7 @@ export default function Performance() {
             </h1>
             <p className="text-sm text-gray-600">Rute Performance & Stop Oversigt</p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleExportReport}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
-              title="Eksporter rapport"
-            >
-              <Download size={20} />
-            </button>
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
-            >
-              <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
-            </button>
-          </div>
+
         </div>
       </div>
 

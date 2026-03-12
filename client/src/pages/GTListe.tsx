@@ -16,7 +16,6 @@ export default function GTListe() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("postnummer");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [lastDataHash, setLastDataHash] = useState<string>('');
 
@@ -72,12 +71,7 @@ export default function GTListe() {
     }
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsRefreshing(false);
-    toast.success("Data opdateret fra Google Sheets");
-  };
+
 
   if (error) {
     return (
@@ -105,20 +99,13 @@ export default function GTListe() {
     <div className="min-h-screen pb-24" style={{ background: "oklch(0.99 0.001 286)" }}>
       {/* Header */}
       <div className="sticky top-0 z-10 p-4 sm:p-6" style={{ background: "linear-gradient(135deg, oklch(0.15 0.01 286) 0%, oklch(0.25 0.01 286) 100%)" }}>
-        <div className="max-w-4xl mx-auto flex items-center justify-between mb-4">
+        <div className="max-w-4xl mx-auto mb-4">
           <div>
             <h1 className="text-lg sm:text-2xl font-bold text-white">Tag fra liste</h1>
             <p className="text-xs sm:text-sm text-gray-300 mt-1">
               Sidst opdateret: {lastUpdated.toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' })}
             </p>
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="p-2 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw size={20} className={`text-white ${isRefreshing ? 'animate-spin' : ''}`} />
-          </button>
         </div>
 
         {/* Search */}

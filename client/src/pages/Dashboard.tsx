@@ -56,17 +56,8 @@ function KpiCard({
 
 export default function Dashboard() {
   const { data: sheetsData, loading, error } = useGoogleSheets("DagensTal");
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const flightData = parseDagensTal(sheetsData);
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    // Force refetch by waiting a moment
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsRefreshing(false);
-    toast.success("Data opdateret fra Google Sheets");
-  };
 
   if (error) {
     return (
@@ -95,16 +86,7 @@ export default function Dashboard() {
       {/* Header with ETA */}
       <div className="sticky top-0 z-10 p-4 sm:p-6" style={{ background: "linear-gradient(135deg, oklch(0.15 0.01 286) 0%, oklch(0.25 0.01 286) 100%)" }}>
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-lg sm:text-2xl font-bold text-white">Flyoverblik</h1>
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="p-2 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw size={20} className={`text-white ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
+          <h1 className="text-lg sm:text-2xl font-bold text-white">Flyoverblik</h1>
 
           {/* ETA Display */}
           <div className="bg-white/10 backdrop-blur rounded-xl p-4 sm:p-6 border border-white/20">

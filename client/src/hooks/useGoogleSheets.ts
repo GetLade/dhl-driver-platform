@@ -13,13 +13,25 @@ export function useGoogleSheets(sheetName: string, range: string = 'A:H') {
   const [error, setError] = useState<string | null>(null);
   const [lastDataHash, setLastDataHash] = useState<string>('');
 
-  // Check if current time is within polling window (05:00-09:00 CET)
+  // Check if current time is within polling window based on weekday
+  // Monday: 05:00-07:00, Tuesday-Friday: 07:00-09:00
   const isWithinPollingWindow = () => {
     const now = new Date();
     // Convert to CET (UTC+1, or UTC+2 during DST)
     const cetTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Copenhagen' }));
     const hour = cetTime.getHours();
-    return hour >= 5 && hour < 9;
+    const dayOfWeek = cetTime.getDay(); // 0 = Sunday, 1 = Monday, 5 = Friday, 6 = Saturday
+    
+    // Monday (1): 05:00-07:00
+    if (dayOfWeek === 1) {
+      return hour >= 5 && hour < 7;
+    }
+    // Tuesday-Friday (2-5): 07:00-09:00
+    if (dayOfWeek >= 2 && dayOfWeek <= 5) {
+      return hour >= 7 && hour < 9;
+    }
+    // Saturday-Sunday: no polling
+    return false;
   };
 
   // Simple hash function to detect data changes
@@ -68,8 +80,8 @@ export function useGoogleSheets(sheetName: string, range: string = 'A:H') {
     
     const setupPolling = () => {
       if (isWithinPollingWindow()) {
-        // Poll every 5 minutes (300000 ms) during 05:00-09:00 CET
-        interval = setInterval(fetchData, 5 * 60 * 1000);
+        // Poll every 30 minutes (1800000 ms) during polling window
+        interval = setInterval(fetchData, 30 * 60 * 1000);
       } else {
         // No polling outside the window
         interval = null;
