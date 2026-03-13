@@ -106,7 +106,7 @@ export default function Dashboard() {
               </div>
             </div>
             <p className="text-xs sm:text-sm text-white/60 mt-2">
-              {flightData.date ? new Date(flightData.date).toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Dato ukendt'}
+              Data fra: {flightData.date ? new Date(flightData.date).toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Ukendt'}
             </p>
           </div>
         </div>

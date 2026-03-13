@@ -103,7 +103,7 @@ export default function GTListe() {
           <div>
             <h1 className="text-lg sm:text-2xl font-bold text-white">Tag fra liste</h1>
             <p className="text-xs sm:text-sm text-gray-300 mt-1">
-              Sidst opdateret: {lastUpdated.toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+              Data fra: {lastUpdated.toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' })}
             </p>
           </div>
         </div>

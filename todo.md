@@ -22,6 +22,7 @@
 - [x] Remove refresh buttons from all three pages
 - [x] Update polling to 30-minute intervals
 - [x] Implement weekday-specific polling windows (Mon 5-7, Tue-Fri 7-9)
+- [x] Replace "Sidst opdateret" with "Data fra: [date]" on all three pages
 
 ## Recently Completed Features
 - [x] Add visual distinction for averages (subtle background color or "Gennemsnit" label)

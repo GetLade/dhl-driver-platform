@@ -191,7 +191,11 @@ export default function Performance() {
             </h1>
             <p className="text-sm text-gray-600">Rute Performance & Stop Oversigt</p>
           </div>
-
+          {combinedData.length > 0 && (
+            <div className="text-xs text-gray-500">
+              Data fra: {new Date(combinedData[0].date).toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+            </div>
+          )}
         </div>
       </div>
 
