@@ -64,6 +64,27 @@ export default function Performance() {
   const statistics = parseStatistik(statistikData);
 
   // Combine ODIN and Stop data by route - ensure same day or show only available data
+  // Calculate monthly average stops for current month
+  const getMonthlyAverageStops = (route: string) => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Filter stops for current month and route
+    const monthlyStops = stops.filter(stop => {
+      const stopDate = new Date(stop.date);
+      return stop.pudRoute === route 
+        && stopDate.getMonth() === currentMonth 
+        && stopDate.getFullYear() === currentYear;
+    });
+    
+    if (monthlyStops.length === 0) return 0;
+    
+    // Calculate average
+    const sum = monthlyStops.reduce((acc, stop) => acc + stop.totalStops, 0);
+    return sum / monthlyStops.length;
+  };
+
   const combinedData = useMemo(() => {
     // Get the latest date from BOTH Stop and ODIN data
     const latestStopDate = stops.length > 0 
@@ -111,6 +132,7 @@ export default function Performance() {
         avgBreakMinutes: stats?.avgBreakMinutes || 0,
         avgSporh: stats?.avgSporh || 0,
         avgTwAdhDL: stats?.avgTwAdhDL || 0,
+        monthlyAvgStops: getMonthlyAverageStops(route.route),
       };
     });
 
@@ -137,6 +159,7 @@ export default function Performance() {
           avgBreakMinutes: stats?.avgBreakMinutes || 0,
           avgSporh: stats?.avgSporh || 0,
           avgTwAdhDL: stats?.avgTwAdhDL || 0,
+          monthlyAvgStops: getMonthlyAverageStops(stop.pudRoute),
         });
       }
     });
@@ -303,6 +326,9 @@ export default function Performance() {
                       </p>
                       {route.avgTotalStops > 0 && (
                         <p className="text-xs text-gray-500">Avg: {route.avgTotalStops.toFixed(1)}</p>
+                      )}
+                      {route.monthlyAvgStops > 0 && (
+                        <p className="text-xs text-gray-500">Average Stops (Monat): {route.monthlyAvgStops.toFixed(1)}</p>
                       )}
                     </div>
                     <div>

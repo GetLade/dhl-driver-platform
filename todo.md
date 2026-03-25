@@ -19,6 +19,9 @@
 - [x] Fixed column indices in parseStatistik (Avg twAdhDL now uses column J instead of I)
 
 ## In Progress
+- [x] Add "Average Stops (Monat)" calculation for current month
+
+## Previous In Progress
 - [x] Remove refresh buttons from all three pages
 - [x] Update polling to 30-minute intervals
 - [x] Implement weekday-specific polling windows (Mon 5-7, Tue-Fri 7-9)
