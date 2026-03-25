@@ -325,12 +325,19 @@ export default function Performance() {
                         {route.totalStops}
                       </p>
                       {route.avgTotalStops > 0 && (
-                        <p className="text-xs text-gray-500">Avg: {route.avgTotalStops.toFixed(1)}</p>
-                      )}
-                      {route.monthlyAvgStops > 0 && (
-                        <p className="text-xs text-gray-500">Average Stops (Monat): {route.monthlyAvgStops.toFixed(1)}</p>
+                        <div className="pt-2 border-t border-gray-200">
+                          <p className="text-xs text-gray-500">Avg: {route.avgTotalStops.toFixed(1)}</p>
+                        </div>
                       )}
                     </div>
+                    {route.monthlyAvgStops > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-600 font-semibold">Avg Stops (Måned):</p>
+                        <p className="text-lg font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
+                          {route.monthlyAvgStops.toFixed(1)}
+                        </p>
+                      </div>
+                    )}
                     <div>
                       <p className="text-xs text-gray-600 font-semibold">SPORH:</p>
                       <p className="text-lg font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
