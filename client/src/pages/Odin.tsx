@@ -200,6 +200,21 @@ export default function Performance() {
     return odinAverage < 90;
   };
 
+  // Get specific action message based on which metrics are below 90%
+  const getPerformanceAlertMessage = (route: typeof sortedRoutes[0]) => {
+    const leveringerLow = route.twAdhLeveris < 90;
+    const afhentningerLow = route.twAdhAfhent < 90;
+    
+    if (leveringerLow && afhentningerLow) {
+      return "Arbejde på leveringer og afhentninger";
+    } else if (leveringerLow) {
+      return "Arbejde på leveringer";
+    } else if (afhentningerLow) {
+      return "Arbejde på afhentninger";
+    }
+    return "";
+  };
+
 
 
   const loading = odinLoading || stopLoading || statistikLoading;
@@ -247,9 +262,12 @@ export default function Performance() {
                     {route.route}
                   </h3>
                   {hasPerformanceAlert(route) && (
-                    <div className="flex items-center gap-0.5 px-1 py-0.5 rounded" style={{ background: "oklch(0.97 0.04 25)" }}>
-                      <AlertCircle size={11} style={{ color: "oklch(0.45 0.22 25)" }} />
-                      <span className="text-xs font-semibold" style={{ color: "oklch(0.45 0.22 25)" }}>Odin under 90%</span>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-0.5 px-1 py-0.5 rounded" style={{ background: "oklch(0.97 0.04 25)" }}>
+                        <AlertCircle size={11} style={{ color: "oklch(0.45 0.22 25)" }} />
+                        <span className="text-xs font-semibold" style={{ color: "oklch(0.45 0.22 25)" }}>Odin under 90%</span>
+                      </div>
+                      <span className="text-xs" style={{ color: "oklch(0.45 0.22 25)" }}>{getPerformanceAlertMessage(route)}</span>
                     </div>
                   )}
                 </div>

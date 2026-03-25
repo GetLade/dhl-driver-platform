@@ -62,3 +62,9 @@
 ## Current Work
 - [x] Update alert logic to calculate average of deliveries and pickups (not just deliveries)
 - [x] Change alert label from "Under 90%" to "Odin under 90%"
+
+## Current Work
+- [x] Add specific action messages to alerts based on which metrics are below 90%
+  - [x] If leveringer < 90% → show "Arbejde på leveringer"
+  - [x] If afhentninger < 90% → show "Arbejde på afhentninger"
+  - [x] If both < 90% → show "Arbejde på leveringer og afhentninger"
