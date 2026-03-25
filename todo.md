@@ -65,6 +65,7 @@
 
 ## Current Work
 - [x] Add specific action messages to alerts based on which metrics are below 90%
-  - [x] If leveringer < 90% → show "Arbejde på leveringer"
-  - [x] If afhentninger < 90% → show "Arbejde på afhentninger"
-  - [x] If both < 90% → show "Arbejde på leveringer og afhentninger"
+  - [x] If leveringer < 90% → show "Arbejd på leveringer"
+  - [x] If afhentninger < 90% → show "Arbejd på afhentninger"
+  - [x] If both < 90% → show "Arbejd på leveringer og afhentninger"
+- [x] Change "Arbejde" to "Arbejd" in all alert messages

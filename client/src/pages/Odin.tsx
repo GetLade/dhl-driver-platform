@@ -206,11 +206,11 @@ export default function Performance() {
     const afhentningerLow = route.twAdhAfhent < 90;
     
     if (leveringerLow && afhentningerLow) {
-      return "Arbejde på leveringer og afhentninger";
+      return "Arbejd på leveringer og afhentninger";
     } else if (leveringerLow) {
-      return "Arbejde på leveringer";
+      return "Arbejd på leveringer";
     } else if (afhentningerLow) {
-      return "Arbejde på afhentninger";
+      return "Arbejd på afhentninger";
     }
     return "";
   };
