@@ -332,7 +332,7 @@ export default function Performance() {
                     </div>
                     {route.monthlyAvgStops > 0 && (
                       <div>
-                        <p className="text-xs text-gray-600 font-semibold">Avg Stops (Måned):</p>
+                        <p className="text-xs text-gray-600 font-semibold">Avg Stops ({new Date().toLocaleString('da-DK', { month: 'long' })}):</p>
                         <p className="text-lg font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
                           {route.monthlyAvgStops.toFixed(1)}
                         </p>
@@ -356,16 +356,14 @@ export default function Performance() {
                         <p className="text-xs text-gray-500">Avg: {route.avgBreakMinutes.toFixed(1)} min</p>
                       )}
                     </div>
-                  </div>
-                )}
-
-                {/* Average Arrival Time */}
-                {route.avgCourierArrivalTm && (
-                  <div className="pt-2 border-t border-gray-100">
-                    <p className="text-xs text-gray-600 font-semibold">Gennemsn. ankomst:</p>
-                    <p className="text-lg font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
-                      {route.avgCourierArrivalTm}
-                    </p>
+                    {route.avgCourierArrivalTm && (
+                      <div>
+                        <p className="text-xs text-gray-600 font-semibold">Gennemsn. ankomst:</p>
+                        <p className="text-lg font-bold" style={{ color: "oklch(0.15 0.01 286)" }}>
+                          {route.avgCourierArrivalTm}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

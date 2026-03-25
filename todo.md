@@ -20,6 +20,8 @@
 
 ## In Progress
 - [x] Add "Average Stops (Monat)" calculation for current month
+- [x] Change "Avg Stops (Måned)" to display dynamic month name in Danish
+- [x] Reposition "Gennemsnitlig ankomst" beside "Pause" in two-column layout
 
 ## Previous In Progress
 - [x] Remove refresh buttons from all three pages
