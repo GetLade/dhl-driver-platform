@@ -58,3 +58,7 @@
 - Stop - Stop statistics data
 - GTListe - Package list data
 - Statestik - Average statistics (note: "Statestik" not "Statistik")
+
+## Current Work
+- [x] Update alert logic to calculate average of deliveries and pickups (not just deliveries)
+- [x] Change alert label from "Under 90%" to "Odin under 90%"

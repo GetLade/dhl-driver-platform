@@ -194,9 +194,10 @@ export default function Performance() {
 
 
 
-  // Check if route has performance alert (delivery success < 90%)
+  // Check if route has performance alert (average of delivery and pickup success < 90%)
   const hasPerformanceAlert = (route: typeof sortedRoutes[0]) => {
-    return route.twAdhLeveris > 0 && route.twAdhLeveris < 90;
+    const odinAverage = (route.twAdhLeveris + route.twAdhAfhent) / 2;
+    return odinAverage < 90;
   };
 
 
@@ -248,7 +249,7 @@ export default function Performance() {
                   {hasPerformanceAlert(route) && (
                     <div className="flex items-center gap-0.5 px-1 py-0.5 rounded" style={{ background: "oklch(0.97 0.04 25)" }}>
                       <AlertCircle size={11} style={{ color: "oklch(0.45 0.22 25)" }} />
-                      <span className="text-xs font-semibold" style={{ color: "oklch(0.45 0.22 25)" }}>Under 90%</span>
+                      <span className="text-xs font-semibold" style={{ color: "oklch(0.45 0.22 25)" }}>Odin under 90%</span>
                     </div>
                   )}
                 </div>
